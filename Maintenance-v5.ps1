@@ -1,6 +1,6 @@
 ##########################################################################################################################
 ### Tech Team Solutions Deployable Maitenance Script
-### Last Updated 2025.03.27
+### Last Updated 2025.04.08
 ### Written by ESS
 ##########################################################################################################################
 # Requires -RunAsAdministrator
@@ -99,12 +99,12 @@ Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device M
 
 Write-Host "Installing Operation packages..." | Write-Log "Installing Operation packages..."
 try {
-    winget --version
-    Write-Log "Winget is already installed"
+    winget --version | Out-Null
+    Write-Host "Winget is already installed" | Write-Log "Winget is already installed"
 } catch {  
     Install-Module -Name Microsoft.WinGet.Client -Force -Confirm:$false
     Import-Module -Name Microsoft.WinGet.Client -Force -Confirm:$false
-    Write-Log "Winget Installed"
+    Write-Host "Winget installed" | Write-Log "Winget Installed"
 }
 
 ##########################################################################################################################
@@ -115,16 +115,16 @@ try {
 $source = Get-PackageSource -Name "NuGet" -ErrorAction SilentlyContinue
 
 if ($source) {
-    Write-Output "Package source NuGet already exists."
+    Write-Host "Package source NuGet already exists." | Write-Log "Package source NuGet already exists."
 } else {
     # Install the new Powershell Windows Update modules
     try{
         Register-PackageSource -Name NuGet -Location https://www.nuget.org/api/v2 -ProviderName NuGet
         Set-PackageSource -Name NuGet -Trusted -ProviderName NuGet
         Install-Package -Name Newtonsoft.Json -ProviderName NuGet -Source NuGet
-        Write-Log "NuGet Package Source installed successfully."
+        Write-Host "NuGet Package Source installed successfully" | Write-Log "NuGet Package Source installed successfully."
     } catch {
-        Write-Log "NuGet Failed to install"
+        Write-Host "NuGet Failed to install" | Write-Log "NuGet Failed to install"
     }
 }
 
@@ -143,9 +143,9 @@ try {
         $wmiObj = Get-WmiObject -Namespace $namespaceName -Class $className
         $result = $wmiObj.UpdateScanMethod()
     }
-    Write-Log "Windows Store Update Scan Method Result: $result"
+    Write-Host "Windows Store Update Scan Method Result: $result" | Write-Log "Windows Store Update Scan Method Result: $result"
 } catch {
-    Write-Log "Windows Store Update Failed"
+    Write-Host "Windows Store Update Failed" | Write-Log "Windows Store Update Failed"
 }
 
 ##########################################################################################################################
@@ -176,9 +176,9 @@ try {
     usoclient startinteractivescan
 
     Wait-Process -Name "*usoclient*"
-    Write-Log "Windows Updates have completed..."
+    Write-Host "Windows Updates have completed..." | Write-Log "Windows Updates have completed..."
 } catch {
-    Write-Log "Windows Update failed... " + $_.Exception.Message
+    Write-Host "Windows Update failed... " + $_.Exception.Message | Write-Log "Windows Update failed... " + $_.Exception.Message
 }
 
 ##########################################################################################################################
@@ -252,7 +252,7 @@ Try {
     Get-AppxPackage *Microsoft.XboxIdentityProvider* | Remove-AppxPackage
     Get-AppxPackage *Microsoft.XboxGameingOverlay* | Remove-AppxPackage
 } catch {
-    Write-Log "There was a problem removing preinstalled software"
+    Write-Host "There was a problem removing preinstalled software" | Write-Log "There was a problem removing preinstalled software" + $_.Exception.Message
 }
 
 ##########################################################################################################################
@@ -273,7 +273,7 @@ if(Test-Path ($FileSystemPath + '\Windows\System32\catroot2.old')) {
 ##########################################################################################################################
 
 # Clear Disk Cleanup options
-Write-Log "Clearing Disk Cleanup options..."
+Write-Host "Setting Disk Cleanup options..." | Write-Log "Setting Disk Cleanup options..."
 $RegPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\VolumeCaches"
 $CleanupCategories = @(
     "Active Setup Temp Folders",
@@ -326,10 +326,10 @@ try {
         }
 
         Wait-Process -InputObject $CleanupProcess
-        Write-Log "Disk Cleanup Process Finished."
+        Write-Host "Disk Cleanup Process Finished." | Write-Log "Disk Cleanup Process Finished."
 
 } catch {
-    Write-Log "Error during Disk Cleanup: $_"
+    Write-Host "Error during Disk Cleanup: $_" | Write-Log "Error during Disk Cleanup: $_"
 }
 
 ##########################################################################################################################

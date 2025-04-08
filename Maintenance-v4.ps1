@@ -191,6 +191,7 @@ try {
 } catch {
     Write-Log "PSWindowsUpdate was already installed."
 }
+
 # Authorize Service Manager to inlcude all updates
 Add-WUServiceManager -ServiceID "7971f918-a847-4430-9279-4a52d1efe18d" -AddServiceFlag 7 -Confirm:$False | Out-Null
 Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot
