@@ -1,6 +1,6 @@
 ##########################################################################################################################
 ### Tech Team Solutions Deployable Maitenance Script
-### Last Updated 2025.04.08
+### Last Updated 2025.04.09
 ### Written by ESS
 ##########################################################################################################################
 # Requires -RunAsAdministrator
@@ -32,7 +32,7 @@ function Write-Log {
 
 function Write-DriveSpaceNotification {
     param ([string]$Message)
-    $Volume = Get-Volume -DriveLetter ($FileSystemPath[0].ToString().Substring(0,1)) -ErrorAction SilentlyContinue
+    $Volume = Get-Volume -DriveLetter ($FileSystemPath[0].ToString().Substring(0,1)) -ErrorAction SilentlyContinue | Out-Null
     $VolumeString = $Volume | Out-String
     #$Volume = Get-Volume -DriveLetter C -ErrorAction SilentlyContinue
     if ($Volume) {
