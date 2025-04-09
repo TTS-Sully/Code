@@ -341,4 +341,3 @@ Write-DriveSpaceNotification
 # Finalize log
 $EndDate = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 Write-Log "Maintenance Log completed $EndDate"
-Read-Host "Press Enter to exit..."
