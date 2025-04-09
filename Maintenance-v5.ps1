@@ -10,6 +10,17 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 }
 
 ##########################################################################################################################
+### Variable Builder
+##########################################################################################################################
+
+$FileSystemPath = [System.Environment]::GetEnvironmentVariable('SystemDrive')
+$Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$LogDirectoryPath = $FileSystemPath  + '\ProgramData\TTS'
+# Set log file path with date to ensure uniqueness
+$LogPath = $LogDirectoryPath + '\Maintenance_Log_' + $Date + '_Automation.txt'
+$TTSPath = $FileSystemPath + '\TTS'
+
+##########################################################################################################################
 ### Functions
 ##########################################################################################################################
 
@@ -21,7 +32,7 @@ function Write-Log {
 
 function Write-DriveSpaceNotification {
     param ([string]$Message)
-    $Volume = Get-Volume -DriveLetter ($FileSystemPath[0].Substring(0,1)) -ErrorAction SilentlyContinue
+    $Volume = Get-Volume -DriveLetter ($FileSystemPath[0].ToString().Substring(0,1)) -ErrorAction SilentlyContinue
     $VolumeString = $Volume | Out-String
     #$Volume = Get-Volume -DriveLetter C -ErrorAction SilentlyContinue
     if ($Volume) {
@@ -35,17 +46,6 @@ function Write-DriveSpaceNotification {
         exit
     }
 }
-
-##########################################################################################################################
-### Variable Builder
-##########################################################################################################################
-
-$FileSystemPath = [System.Environment]::GetEnvironmentVariable('SystemDrive')
-$Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$LogDirectoryPath = $FileSystemPath  + '\ProgramData\TTS'
-# Set log file path with date to ensure uniqueness
-$LogPath = $LogDirectoryPath + '\Maintenance_Log_' + $Date + '_Automation.txt'
-$TTSPath = $FileSystemPath + '\TTS'
 
 ##########################################################################################################################
 ### Script Start
@@ -260,12 +260,12 @@ Try {
 ##########################################################################################################################
 
 Write-Host "Cleaning Orphaned and Obsolete Windows Fix Files..." | Write-Log "Cleaning Orphaned and Obsolete Windows Fix Files..."
-if(Test-Path ($FileSystemPath + '\Windows\SoftwareDistribution.old')) {
-    Remove-Item -Path $FileSystemPath + '\Windows\SoftwareDistribution.old' -Recurse -Force
+if(Test-Path ('$FileSystemPath\Windows\SoftwareDistribution.old')) {
+    Remove-Item -Path '$FileSystemPath\Windows\SoftwareDistribution.old' -Recurse -Force
 }
 
-if(Test-Path ($FileSystemPath + '\Windows\System32\catroot2.old')) {
-    Remove-Item -Path $FileSystemPath + '\Windows\System32\catroot2.old' -Recurse -Force
+if(Test-Path ('$FileSystemPath\Windows\System32\catroot2.old')) {
+    Remove-Item -Path '$FileSystemPath\Windows\System32\catroot2.old' -Recurse -Force
 }
 
 ##########################################################################################################################
