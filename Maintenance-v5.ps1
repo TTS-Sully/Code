@@ -32,17 +32,23 @@ function Write-Log {
 
 function Write-DriveSpaceNotification {
     param ([string]$Message)
-    $Volume = Get-Volume -DriveLetter ($FileSystemPath[0].ToString().Substring(0,1)) -ErrorAction SilentlyContinue | Out-Null
-    $VolumeString = $Volume | Out-String
-    #$Volume = Get-Volume -DriveLetter C -ErrorAction SilentlyContinue
+    # Extract the drive letter from the file system path
+    $DriveLetter = $FileSystemPath.Substring(0, 1)
+
+    # Get the partition object associated with the drive letter
+    $Partition = Get-Partition -DriveLetter $DriveLetter
+
+    # Use the partition object with Get-Volume
+    $Volume = Get-Volume -Partition $Partition
+
     if ($Volume) {
         $TotalSpace = $Volume.Size
         $FreeSpace = $Volume.SizeRemaining
         $UsedSpace = $TotalSpace - $FreeSpace
         $UsedSpacePercent = [math]::Round(($UsedSpace / $TotalSpace) * 100, 2)
-        Write-Log "$VolumeString drive usage: $UsedSpacePercent%"
+        Write-Log "$Volume drive usage: $UsedSpacePercent%"
     } else {
-        Write-Log "$volumeString drive not found. Exiting script."
+        Write-Log "$volume drive not found. Exiting script."
         exit
     }
 }
