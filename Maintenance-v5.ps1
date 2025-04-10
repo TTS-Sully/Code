@@ -161,15 +161,6 @@ try {
 Write-Host "Starting Monitored Windows Updates..." | Write-Log "Starting Monitored Windows Updates..."
 
 try {
-    $WURegPath = "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate"
-
-    if (!(Test-Path -Path $WURegPath)) {
-        New-Item -Path $WURegPath -Force
-    }
-    Set-ItemProperty -Path $WURegPath -Name ProductVersion -Value "Windows 11" -Force
-    Set-ItemProperty -Path $WURegPath -Name TargetReleaseVersion -Value 1 -Force
-    Set-ItemProperty -Path $WURegPath -Name TargetReleaseVersionInfo -Value "23H2" -Force
-
     # Authorize Service Manager to inlcude all updates
     Add-WUServiceManager -ServiceID "7971f918-a847-4430-9279-4a52d1efe18d" -AddServiceFlag 7 -Confirm:$False | Out-Null
     Write-Host "Windows Update Has Started" | Write-Log "Windows Update Has Started"
