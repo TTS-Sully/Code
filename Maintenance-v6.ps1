@@ -140,11 +140,11 @@ if ($source) {
 
 $system = Get-CimInstance -ClassName Win32_ComputerSystem
 if ($system.Manufacturer -eq "HP") {
-    # Install the HP Client Management Script Library (HPCMSL)
     Install-Module -Name HPCMSL -Force -AcceptLicense
     Install-Module -Name HPDrivers -Force
 
-    Get-HPDrivers -NoPrompt -ShowSoftware -BIOS -DeleteInstallationFiles -SuspendBL
+    #Get-HPDrivers -NoPrompt -ShowSoftware -BIOS -DeleteInstallationFiles -SuspendBL
+    Get-HPDrivers -NoPrompt -ShowSoftware -DeleteInstallationFiles -SuspendBL
 
     # Output the result
     Write-Output "HP Drivers and Software Updates completed." | Write-Log "HP Drivers and Software Updates completed."
