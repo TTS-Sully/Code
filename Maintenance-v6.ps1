@@ -24,10 +24,15 @@ $TTSPath = $FileSystemPath + '\TTS'
 ### Functions
 ##########################################################################################################################
 
+function get-now {
+    param ([string]$format = "yyyy-MM-dd_HH-mm-ss")
+    return (Get-Date).ToString($format)
+}
+
 function Write-Log {
     param ([string]$Message)
-    $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    "$Timestamp - $Message" | Out-File -FilePath $LogPath -Append
+    $timestamp = get-now
+    "$timestamp $Message" | Out-File -FilePath $LogPath -Append
 }
 
 function Write-DriveSpaceNotification {
@@ -60,7 +65,9 @@ function Write-DriveSpaceNotification {
 # Set-ExecutionPolicy Unrestricted -Force -Scope Process
 
 Write-Host "Starting Local Maintenance Script v6..."
-
+# Trigger a Windows Restore Point Creation
+$newnow = get-now
+Checkpoint-Computer -Description "TTS Maintenance: $newnow" -RestorePointType "MODIFY_SETTINGS"
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 
 if (!(Test-Path -Path $LogDirectoryPath)) {
@@ -68,7 +75,8 @@ if (!(Test-Path -Path $LogDirectoryPath)) {
 }
 
 # Start logging
-Write-Log "Maintenance Log Started at $Date"
+$newnow = get-now
+Write-Log "Maintenance Log Started at $newnow"
 
 # Create TTS Directory
 if (!(Test-Path -Path $TTSPath)) {
@@ -356,5 +364,5 @@ try {
 Write-DriveSpaceNotification
 
 # Finalize log
-$EndDate = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-Write-Log "Maintenance Log completed $EndDate"
+$newnow = get-now
+Write-Host "Maintenance Log completed $newnow" | Write-Log "Maintenance Log completed $newnow"
