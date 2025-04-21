@@ -57,9 +57,9 @@ function Write-DriveSpaceNotification {
 ### Script Start
 ##########################################################################################################################
 
-#Set-ExecutionPolicy Unrestricted -Force -Scope Process
+# Set-ExecutionPolicy Unrestricted -Force -Scope Process
 
-Write-Host "Starting Local Maintenance Script v5..."
+Write-Host "Starting Local Maintenance Script v6..."
 
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 
@@ -125,6 +125,7 @@ if ($source) {
 } else {
     # Install the new Powershell Windows Update modules
     try{
+        #Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
         Register-PackageSource -Name NuGet -Location https://www.nuget.org/api/v2 -ProviderName NuGet
         Set-PackageSource -Name NuGet -Trusted -ProviderName NuGet
         Install-Package -Name Newtonsoft.Json -ProviderName NuGet -Source NuGet
@@ -141,6 +142,7 @@ if ($source) {
 $system = Get-CimInstance -ClassName Win32_ComputerSystem
 if ($system.Manufacturer -eq "HP") {
     Install-Module -Name HPCMSL -Force -AcceptLicense
+    #Install-Module -Name HPCMSL -Force
     Install-Module -Name HPDrivers -Force
 
     #Get-HPDrivers -NoPrompt -ShowSoftware -BIOS -DeleteInstallationFiles -SuspendBL
