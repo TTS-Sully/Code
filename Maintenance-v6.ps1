@@ -108,15 +108,13 @@ Write-DriveSpaceNotification
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata' -Name DeviceMetadataServiceURL -Value 'http://dmd.metaservices.microsoft.com/dms/metadata.svc'
 
 ##########################################################################################################################
-### Install Microsoft winget
+### Install Microsoft WinGet
 ##########################################################################################################################
 
 Write-Host "Installing Operation packages..." | Write-Log "Installing Operation packages..."
 
-Install-Module -Name Microsoft.WinGet.Client -RequiredVersion 0.2.1
-# Install-Module -Name Microsoft.WinGet.Client -Force -Confirm:$false
-Import-Module -Name Microsoft.WinGet.Client -Force -Confirm:$false
-Write-Host "Winget installed" | Write-Log "Winget Installed"
+Install-Module -Name Microsoft.WinGet.Client -RequiredVersion 0.2.1 -Force
+Write-Host "WinGet installed" | Write-Log "Winget Installed"
 
 ##########################################################################################################################
 ### Install Microsoft NuGet
@@ -160,7 +158,7 @@ if ($system.Manufacturer -eq "HP") {
 }
 
 ##########################################################################################################################
-### Prep and Run Windows Store / Windows Packages Updates
+### Prep and Run Windows Store Updates"
 ##########################################################################################################################
 
 Write-Host "Starting Windows Store Updates..." | Write-Log "Starting Windows Store Updates..."
@@ -288,6 +286,10 @@ if(Test-Path ('$FileSystemPath\Windows\SoftwareDistribution.old')) {
 
 if(Test-Path ('$FileSystemPath\Windows\System32\catroot2.old')) {
     Remove-Item -Path '$FileSystemPath\Windows\System32\catroot2.old' -Recurse -Force
+}
+
+if(Test-Path ('$FileSystemPath\Windows.old')) {
+    Remove-Item -Path '$FileSystemPath\Windows.old' -Recurse -Force
 }
 
 ##########################################################################################################################
