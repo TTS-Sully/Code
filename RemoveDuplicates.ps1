@@ -18,10 +18,11 @@ $groupedFiles = $normalizedFiles | Group-Object -Property @{Expression={ "$($_.N
 foreach ($group in $groupedFiles) {
     # If there are duplicates, keep the first one and remove the rest
     if ($group.Group.Count -gt 1) {
-        Write-Host "Removing duplicates for: $($group.Name)"
+        Write-Host "Removing duplicates for: $($group.Name)" -ForegroundColor Yellow
         $filesToRemove = $group.Group | Select-Object
+        #TODO: Remove the first file from the list to keep it
         foreach ($file in $filesToRemove) {
-            Remove-Item -Path $file.FullName -Force
+            #Remove-Item -Path $file.FullName -Force
             Write-Host "Removed: $($file.FullName)"
         }
     } else {
