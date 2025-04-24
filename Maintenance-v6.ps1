@@ -112,14 +112,11 @@ Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device M
 ##########################################################################################################################
 
 Write-Host "Installing Operation packages..." | Write-Log "Installing Operation packages..."
-try {
-    winget --version | Out-Null
-    Write-Host "Winget is already installed" | Write-Log "Winget is already installed"
-} catch {  
-    Install-Module -Name Microsoft.WinGet.Client -Force -Confirm:$false
-    Import-Module -Name Microsoft.WinGet.Client -Force -Confirm:$false
-    Write-Host "Winget installed" | Write-Log "Winget Installed"
-}
+
+Install-Module -Name Microsoft.WinGet.Client -RequiredVersion 0.2.1
+# Install-Module -Name Microsoft.WinGet.Client -Force -Confirm:$false
+Import-Module -Name Microsoft.WinGet.Client -Force -Confirm:$false
+Write-Host "Winget installed" | Write-Log "Winget Installed"
 
 ##########################################################################################################################
 ### Install Microsoft NuGet
