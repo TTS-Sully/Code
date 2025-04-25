@@ -9,23 +9,12 @@
 # Get all files in the folder
 $files = Get-ChildItem -File
 
-# Normalize filenames by removing numbers in parentheses and include file size
-$normalizedFiles = $files | Select-Object @{Name='NormalizedName';Expression={ $_.BaseName -replace '\(\d+\)', '' }}, FullName, Length
-
-# Group files by their normalized name and file size
-$groupedFiles = $normalizedFiles | Group-Object -Property @{Expression={ "$($_.NormalizedName.TrimEnd(" "))-$($_.Length)" }}
-
-foreach ($group in $groupedFiles) {
-    # If there are duplicates, keep the first one and remove the rest
-    if ($group.Group.Count -gt 1) {
-        Write-Host "Removing duplicates for: $($group.Name)" -ForegroundColor Yellow
-        $filesToRemove = $group.Group | Select-Object
-        #TODO: Remove the first file from the list to keep it
-        foreach ($file in $filesToRemove) {
-            #Remove-Item -Path $file.FullName -Force
-            Write-Host "Removed: $($file.FullName)"
-        }
+$testhash = Get-FileHash -Algorithm MD5 -Path $files.FullName | Select-Object -Property Hash, Path, FullName
+$testhash | Sort-Object -Property Hash | Group-Object -Property Hash | ForEach-Object {
+    if($_.Count -gt 1) {
+        Write-Host "Duplicate files found:" -ForegroundColor Yellow
+        $_.Group | ForEach-Object { Write-Host $_.Path -ForegroundColor Red }
     } else {
-        Write-Host "No duplicates found for: $($group.Name)"
+        Write-Host "No duplicates found for: $($_.FullName)" -ForegroundColor Green
     }
 }
