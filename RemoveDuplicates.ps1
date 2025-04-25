@@ -9,12 +9,29 @@
 # Get all files in the folder
 $files = Get-ChildItem -File
 
-$testhash = Get-FileHash -Algorithm MD5 -Path $files.FullName | Select-Object -Property Hash, Path, FullName
-$testhash | Sort-Object -Property Hash | Group-Object -Property Hash | ForEach-Object {
-    if($_.Count -gt 1) {
+$dataFORMATTED = $files | ForEach-Object {
+    $hash = Get-FileHash -Algorithm MD5 -Path $_.FullName
+    [PSCustomObject]@{
+        Path = $_.FullName
+        Hash = $hash.Hash
+        CreationTime = $_.CreationTime
+    }
+}
+    
+$dataFORMATTED | Sort-Object -Property CreationTime | Group-Object -Property Hash | ForEach-Object {
+    if($_.Count -gt 1){
         Write-Host "Duplicate files found:" -ForegroundColor Yellow
-        $_.Group | ForEach-Object { Write-Host $_.Path -ForegroundColor Red }
+
+        #$_.Group | Format-List *
+        $_.Group | ForEach-Object {
+            if ($_.Path -ne $earliestFile.Path){
+                $local = Get-Item $_.Path #| Format-List -Property Name, CreationTimeUtc
+                Write-Host $local.CreationTimeUtc  $local.Name -ForegroundColor Red
+            } else {
+                Write-Host $earliestFile.CreationTimeUtc $earliestFile.Path -ForegroundColor Green
+            }
+        }
     } else {
-        Write-Host "No duplicates found for: $($_.FullName)" -ForegroundColor Green
+        $_.Group | ForEach-Object { Write-Host "No duplicates found for: " $_.Path -ForegroundColor Green }
     }
 }
