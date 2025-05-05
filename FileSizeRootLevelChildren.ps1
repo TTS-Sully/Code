@@ -1,5 +1,5 @@
 # Define the path to the folder
-$folderPath = "C:\users"
+$folderPath = (Get-Location).Path
 
 # Get the root-level children (files and folders)
 $children = Get-ChildItem -Path $folderPath -Depth 0
