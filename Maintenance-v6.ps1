@@ -144,7 +144,7 @@ if ($source) {
 
 $system = Get-CimInstance -ClassName Win32_ComputerSystem
 if ($system.Manufacturer -eq "HP") {
-    Install-Module -Name HPCMSL -Force -AcceptLicense
+    Install-Module -Name HPCMSL -Force #-AcceptLicense
     #Install-Module -Name HPCMSL -Force
     Install-Module -Name HPDrivers -Force
 
