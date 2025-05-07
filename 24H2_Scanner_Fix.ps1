@@ -1,11 +1,47 @@
+$TTSPath = "c:\TTS"
+$DriverDestination = "C:\Program Files\HP\HP ScanJet Pro 3000 s3\DriverStoreTwain\HPScanUnusedStubDriver"
+
+if (!(Test-Path -Path $TTSPath)) {
+    New-Item -ItemType Directory -Path $TTSPath
+}
+
+if (!(Test-Path -Path $DriverDestination)) {
+    New-Item -ItemType Directory -Path $DriverDestination
+}
+
+Move-Item -Path UnusedScanStub_SJ3000_U.cat -Destination $DriverDestination\UnusedScanStub_SJ3000_U.cat
+Move-Item -Path UnusedScanStub_SJ3000_U.inf -Destination $DriverDestination\UnusedScanStub_SJ3000_U.inf
+
 # Remove broken USB PRINTING SUPPORT devices
-$devicesREMOVE_PRINTINGSUPPORT = Get-PnpDevice -FriendlyName "*USB Printing Support*"
-if ($null -eq $devicesREMOVE_PRINTINGSUPPORT -or $devicesREMOVE_PRINTINGSUPPORT.Count -eq 0) {
-    if ($devicesREMOVE_PRINTINGSUPPORT) {
+$deviceDRIVERSTOUPDATE = Get-PnpDevice -FriendlyName "*USB Printing Support*"
+if ($null -eq $deviceDRIVERSTOUPDATE -or $deviceDRIVERSTOUPDATE.Count -eq 0) {
+    if ($deviceDRIVERSTOUPDATE) {
         # Remove the device
-        $devicesREMOVE_PRINTINGSUPPORT | ForEach-Object { & pnputil /remove-device $_.InstanceId }
+        $deviceDRIVERSTOUPDATE | ForEach-Object { & pnputil /remove-device $_.InstanceId }
     }
 }
+# TODO: Install HP Scanner USB Printing Support
+foreach ($Camera in $Cameras) {
+    if ($Camera.InfName -ne "usbvideo.inf") {
+    Write-Host "Updating Driver"
+    
+    # Uninstall current driver
+    $CurrentDriver = Get-WindowsDriver -Online -All | Where-Object Driver -eq $Camera.InfName
+    pnputil.exe /delete-driver $CurrentDriver.OriginalFileName /uninstall
+    
+    # Install new driver
+    pnputil.exe /add-driver $NewDriverPath /install
+    } else {
+    Write-Host "Driver is already updated"
+    }
+}
+
+
+# GPO Hardware block location: Computer Configuration > Policies > Administrative Templates > System > Device Installation 
+
+
+<#
+
 
 #Removes broen HP 3000 devices
 $devicesREMOVE = Get-PnpDevice -FriendlyName "*HP*3000*" -Class USB, Image
@@ -16,7 +52,12 @@ if( $null -eq $devicesREMOVE -or $devicesREMOVE.Count -eq 0) {
     }
 }
 
-# TODO: Install HP Scanner USB Printing Support
+
+
+
+
+
+
 PNPUtil.exe /add-driver "C:\Drivers\MyDriver\*.inf" /install
 
 
@@ -31,3 +72,5 @@ if($null -eq $devicesDISABLE -or $devicesDISABLE.Count -eq 0) {
         $devicesDISABLE | ForEach-Object { Disable-PnpDevice -InstanceId $_.InstanceId}
     }
 }
+
+#>
