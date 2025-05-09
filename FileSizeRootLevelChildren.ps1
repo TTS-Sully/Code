@@ -11,7 +11,7 @@ $totalSize = 0
 foreach ($child in $children) {
     if ($child.PSIsContainer) {
         # If the child is a folder, get the size of all files within it
-        $folderSize = (Get-ChildItem -Path $child.FullName -Recurse | Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
+        $folderSize = (Get-ChildItem -Path $child.FullName -Recurse -ErrorAction SilentlyContinue| Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
         
         $totalSize += $folderSize
     } else {
