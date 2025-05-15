@@ -37,10 +37,10 @@ foreach ($Camera in $Cameras) {
 }
 
 
-# GPO Hardware block location: Computer Configuration > Policies > Administrative Templates > System > Device Installation 
+<# GPO Hardware block location: 
 
 
-<#
+
 
 
 #Removes broen HP 3000 devices
