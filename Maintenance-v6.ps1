@@ -1,6 +1,6 @@
 ##########################################################################################################################
 ### Tech Team Solutions Deployable Maitenance Script
-### Last Updated 2025.04.11
+### Last Updated 2025.05.15
 ### Written by ESS
 ##########################################################################################################################
 # Requires -RunAsAdministrator
@@ -65,9 +65,13 @@ function Write-DriveSpaceNotification {
 # Set-ExecutionPolicy Unrestricted -Force -Scope Process
 
 Write-Host "Starting Local Maintenance Script v6..."
+
+##########################################################################################################################
 # Trigger a Windows Restore Point Creation
+##########################################################################################################################
+
 $newnow = get-now
-Checkpoint-Computer -Description "TTS Maintenance: $newnow" -RestorePointType "MODIFY_SETTINGS"
+Checkpoint-Computer -Description "TTS Maintenance: $newnow" -RestorePointType "MODIFY_SETTINGS" -ErrorAction SilentlyContinue
 Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 
 if (!(Test-Path -Path $LogDirectoryPath)) {
@@ -106,37 +110,6 @@ Write-DriveSpaceNotification
 ##########################################################################################################################
 
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata' -Name DeviceMetadataServiceURL -Value 'http://dmd.metaservices.microsoft.com/dms/metadata.svc'
-
-##########################################################################################################################
-### Install Microsoft WinGet
-##########################################################################################################################
-
-Write-Host "Installing Operation packages..." | Write-Log "Installing Operation packages..."
-
-Install-Module -Name Microsoft.WinGet.Client -RequiredVersion 0.2.1 -Force
-Write-Host "WinGet installed" | Write-Log "Winget Installed"
-
-##########################################################################################################################
-### Install Microsoft NuGet
-##########################################################################################################################
-
-# Check if the package source exists
-$source = Get-PackageSource -Name "NuGet" -ErrorAction SilentlyContinue
-
-if ($source) {
-    Write-Host "Package source NuGet already exists." | Write-Log "Package source NuGet already exists."
-} else {
-    # Install the new Powershell Windows Update modules
-    try{
-        #Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-        Register-PackageSource -Name NuGet -Location https://www.nuget.org/api/v2 -ProviderName NuGet
-        Set-PackageSource -Name NuGet -Trusted -ProviderName NuGet
-        Install-Package -Name Newtonsoft.Json -ProviderName NuGet -Source NuGet
-        Write-Host "NuGet Package Source installed successfully" | Write-Log "NuGet Package Source installed successfully."
-    } catch {
-        Write-Host "NuGet Failed to install" | Write-Log "NuGet Failed to install"
-    }
-}
 
 ##########################################################################################################################
 ### Prep and Run HP Drivers and Software Updates
@@ -365,3 +338,5 @@ Write-DriveSpaceNotification
 # Finalize log
 $newnow = get-now
 Write-Host "Maintenance Log completed $newnow" | Write-Log "Maintenance Log completed $newnow"
+
+Set-Location -Path $TTSPath
