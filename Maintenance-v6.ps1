@@ -1,6 +1,6 @@
 ##########################################################################################################################
 ### Tech Team Solutions Deployable Maitenance Script
-### Last Updated 2025.05.15
+### Last Updated 2025.05.16
 ### Written by ESS
 ##########################################################################################################################
 # Requires -RunAsAdministrator
@@ -117,7 +117,7 @@ Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device M
 
 $system = Get-CimInstance -ClassName Win32_ComputerSystem
 if ($system.Manufacturer -eq "HP") {
-    Install-Module -Name HPCMSL -Force #-AcceptLicense
+    Install-Module -Name HPCMSL -Force -AcceptLicense
     #Install-Module -Name HPCMSL -Force
     Install-Module -Name HPDrivers -Force
 
