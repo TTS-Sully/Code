@@ -29,18 +29,18 @@ function Write-Log {
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -ErrorAction SilentlyContinue
 
 ##########################################################################################################################
-### Install Microsoft Powershell
-##########################################################################################################################
-
-Install-Module -Name PowerShellGet -Force
-Import-Module PackageManagement
-
-##########################################################################################################################
 ### Install Microsoft NuGet
 ##########################################################################################################################
 
 Write-Host "Installing NuGet and then the newest version of powershell."
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+
+##########################################################################################################################
+### Install Microsoft Powershell
+##########################################################################################################################
+
+Install-Module -Name PowerShellGet -Force
+Import-Module PackageManagement
 
 ##########################################################################################################################
 ### Install Microsoft WinGet
