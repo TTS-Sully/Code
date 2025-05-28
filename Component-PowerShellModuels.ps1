@@ -56,3 +56,10 @@ Write-Host "WinGet installed"
 
 Install-Module -Name PSWindowsUpdate -Repository PSGallery -Force
 Import-Module PSWindowsUpdate
+
+##########################################################################################################################
+### Install Microsoft Windows Update for PowerShell
+##########################################################################################################################
+
+Write-Host "Installing PendingReboot module..."
+Install-Module -Name PendingReboot -Force -AllowClobber -Verbose:$false

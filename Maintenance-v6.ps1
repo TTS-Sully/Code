@@ -91,7 +91,6 @@ if (!(Test-Path -Path $TTSPath)) {
 ### Check for Pending Reboot
 ##########################################################################################################################
 
-Install-Module -Name PendingReboot -Force -AllowClobber -Verbose:$false
 if((Test-PendingReboot -Detailed -SkipConfigurationManagerClientCheck -SkipPendingFileRenameOperations).RebootPending -eq $true) {
     Write-Log "Reboot Pending. Exiting script."
     Write-Host "Reboot Pending. Please Restart the Device and start maintenance again."
