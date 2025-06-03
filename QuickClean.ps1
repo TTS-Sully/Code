@@ -57,7 +57,7 @@ Try {
 ### Detect and Clean Orphaned and Obsolete Windows Fix Files
 ##########################################################################################################################
 
-Write-Host "Cleaning Orphaned and Obsolete Windows Fix Files..." | Write-Log "Cleaning Orphaned and Obsolete Windows Fix Files..."
+Write-Host "Cleaning Orphaned and Obsolete Windows Fix Files..."
 if(Test-Path ('$FileSystemPath\Windows\SoftwareDistribution.old')) {
     Remove-Item -Path '$FileSystemPath\Windows\SoftwareDistribution.old' -Recurse -Force
 }
