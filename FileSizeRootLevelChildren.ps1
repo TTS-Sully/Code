@@ -23,6 +23,6 @@ foreach ($child in $children) {
     Write-Output "$child : $gb_formatted GB"
 }
 
-$totalSizeInGB = [Math]::Round($totalSize / 1GB, 2)
-$totalgb_formatted = "{0:N2}" -f $totalSizeInGB # Formats to 2 decimal places
-Write-Output "Total size of root-level children: $totalgb_formatted GB"
+#$totalSizeInGB = [Math]::Round($totalSize / 1GB, 2)
+#$totalgb_formatted = "{0:N2}" -f $totalSizeInGB # Formats to 2 decimal places
+#Write-Output "Total size of root-level children: $totalgb_formatted GB"
