@@ -17,7 +17,7 @@ $SleepGUID = '238c9fa8-0aad-41ed-83f4-97be242c8f20'
 
 #POWER BUTTON
 
-# PowerButton - On Battery - 1 = Sleep
+# PowerButton - On Battery - 3 = shutdown
 cmd /c "powercfg /setdcvalueindex $NewPlan $PowerGUID $PowerButtonGUID 3"
 # PowerButton - While plugged in - 3 = Shutdown
 cmd /c "powercfg /setacvalueindex $NewPlan $PowerGUID $PowerButtonGUID 3"
@@ -33,8 +33,8 @@ cmd /c "powercfg /setacvalueindex $NewPlan $PowerGUID $SleepGUID 0"
 
 #LID CLOSED
 
-# Lid Closed - On Battery - 0 = Do Nothing
-cmd /c "powercfg /setdcvalueindex $NewPlan $PowerGUID $LidClosedGUID 0"
+# Lid Closed - On Battery - 1 = Sleep
+cmd /c "powercfg /setdcvalueindex $NewPlan $PowerGUID $LidClosedGUID 1"
 # Lid Closed - While plugged in - 0 = Do Nothing
 cmd /c "powercfg /setacvalueindex $NewPlan $PowerGUID $LidClosedGUID 0"
 
