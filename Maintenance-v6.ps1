@@ -264,6 +264,15 @@ if(Test-Path ('$FileSystemPath\Windows.old')) {
     Remove-Item -Path '$FileSystemPath\Windows.old' -Recurse -Force
 }
 
+# Stops the Print Spooler Service and clears the print queue then restarts the service
+Write-Host "Clearing Print Spooler Queue..." | Write-Log "Clearing Print Spooler Queue..."
+
+Stop-Service -Name "Spooler" -Force
+$folderPath = "$env:windir\System32\spool\PRINTERS"
+Get-ChildItem -Path $folderPath | Remove-Item -Force
+Start-Service -Name "Spooler"
+
+
 ##########################################################################################################################
 ### CleanMGR Configuration Setup and Run Commands
 ##########################################################################################################################
