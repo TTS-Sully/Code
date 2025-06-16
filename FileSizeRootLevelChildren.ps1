@@ -14,13 +14,17 @@ foreach ($child in $children) {
         $folderSize = (Get-ChildItem -Path $child.FullName -Recurse -ErrorAction SilentlyContinue| Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
         
         $totalSize += $folderSize
+        $fileSizeInGB = [Math]::Round($folderSize / 1GB, 2)
+        $gb_formatted = "{0:N2}" -f $fileSizeInGB # Formats to 2 decimal places
+        Write-Output "$child : $gb_formatted GB"
     } else {
         # If the child is a file, add its size directly
         $totalSize += $child.Length
+        $fileSizeInGB = [Math]::Round($child.Length / 1GB, 2)
+        $gb_formatted = "{0:N2}" -f $fileSizeInGB # Formats to 2 decimal places
+        Write-Output "$child : $gb_formatted GB"
     }
-    $fileSizeInGB = [Math]::Round($folderSize / 1GB, 2)
-    $gb_formatted = "{0:N2}" -f $fileSizeInGB # Formats to 2 decimal places
-    Write-Output "$child : $gb_formatted GB"
+
 }
 
 #$totalSizeInGB = [Math]::Round($totalSize / 1GB, 2)
