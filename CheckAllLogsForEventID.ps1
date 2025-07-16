@@ -1,3 +1,8 @@
+##########################################################################################################################
+### Tech Team Solutions Windows Event Log Hunter
+### Last Updated 2025.07.16
+### Written by ESS
+##########################################################################################################################
 # Define the event ID you want to search for
 #$EventID = $env:EventIDToFind
 $EventID = 2
@@ -15,3 +20,4 @@ foreach ($Log in $EventLogs) {
         #Write-Host "Found no events with the specified ID in this log"
     }
 }
+exit 1
