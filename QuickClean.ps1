@@ -133,3 +133,4 @@ try {
 } catch {
     Write-Host "Error during Disk Cleanup: $_"
 }
+# Here to make sure this runs when copy / pasted
