@@ -12,3 +12,6 @@ Remove-Item -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Publis
 
 # Remove registry key: EventLog-RemoteDesktopServices-RemoteFX-SessionLicensing-Debug
 Remove-Item -Path "HKLM:\SYSTEM\ControlSet001\Control\WMI\Autologger\EventLog-RemoteDesktopServices-RemoteFX-SessionLicensing-Debug" -Recurse -Force -ErrorAction SilentlyContinue
+
+
+
