@@ -125,6 +125,8 @@ try {
             $CleanupProcess = Start-Process -FilePath "cleanmgr.exe" -ArgumentList "/sagerun:0234 /VERYLOWDISK" -WindowStyle Hidden -PassThru
             
             # Wait for Cleanup to Finish before proceeding
+        } else {
+            $CleanupProcess = Get-Process -Name "cleanmgr*"
         }
 
         Wait-Process -InputObject $CleanupProcess
