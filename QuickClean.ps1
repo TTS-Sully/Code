@@ -1,3 +1,9 @@
+##########################################################################################################################
+### Tech Team Solutions - Quick Clean Script
+### Last Updated 2025.08.06
+### Written by ESS
+##########################################################################################################################
+
 Write-Host "Removing Unneeded Windows Preinstalled Apps"
 Try {
     #Remove Windows Bloatware

@@ -1,3 +1,8 @@
+##########################################################################################################################
+### Tech Team Solutions - report back failed logins for Administrator account
+### Last Updated 2025.08.06
+### Written by ESS
+##########################################################################################################################
 # Define the time range for the search
 $startTime = (Get-Date).AddDays(-365)  # Last 24 hours
 $adminUser = "Administrator"
