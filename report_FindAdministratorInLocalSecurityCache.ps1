@@ -7,7 +7,7 @@
 $computerSystem = Get-WmiObject Win32_ComputerSystem
 
 if ($computerSystem.PartOfDomain) {
-    $domainAdmin = $computerSystem.Domain + "\\Administrator"  # Replace DOMAIN with your actual domain name
+    $domainAdmin = $computerSystem.Domain + "\\Administrator"  
 
     # Check for saved credentials in Credential Manager
     Write-Host "Checking Credential Manager..."
