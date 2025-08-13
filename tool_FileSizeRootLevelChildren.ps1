@@ -2,7 +2,7 @@
 $folderPath = (Get-Location).Path
 
 # Get the root-level children (files and folders)
-$children = Get-ChildItem -Path $folderPath -Depth 0
+$children = Get-ChildItem -Path $folderPath -Depth 0 -Force
 
 # Initialize total size variable
 $totalSize = 0
