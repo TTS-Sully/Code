@@ -1,6 +1,6 @@
 ##########################################################################################################################
 ### Tech Team Solutions Deployable Maitenance Script
-### Last Updated 2025.06.13
+### Last Updated 2025.08.14
 ### Written by ESS
 ##########################################################################################################################
 # Requires -RunAsAdministrator
@@ -109,6 +109,22 @@ Write-DriveSpaceNotification
 ##########################################################################################################################
 
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata' -Name DeviceMetadataServiceURL -Value 'http://dmd.metaservices.microsoft.com/dms/metadata.svc'
+
+##########################################################################################################################
+### Rebuild Windows Component Store
+##########################################################################################################################
+
+$commands = @(
+    "/Cleanup-Mountpoints",
+    "/Online /Cleanup-Image /ScanHealth",
+    "/Online /Cleanup-Image /RestoreHealth",
+    "/Online /Cleanup-Image /StartComponentCleanup /ResetBase"
+)
+
+foreach ($cmd in $commands) {
+    Write-Host "Running: DISM $cmd"
+    Start-Process -FilePath "DISM.exe" -ArgumentList $cmd -Verb RunAs -Wait
+}
 
 ##########################################################################################################################
 ### Prep and Run HP Drivers and Software Updates
