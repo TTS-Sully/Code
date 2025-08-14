@@ -4,12 +4,12 @@
 ### Written by ESS
 ##########################################################################################################################
 # Get domain information
+$problem = $false
 $computerSystem = Get-WmiObject Win32_ComputerSystem
 
 if ($computerSystem.PartOfDomain) {
     $domainAdmin = $computerSystem.Domain + "\\Administrator"  
 
-    # Check for saved credentials in Credential Manager
     Write-Host "Checking Credential Manager..."
     cmdkey /list | Select-String $domainAdmin
 
