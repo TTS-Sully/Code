@@ -114,6 +114,8 @@ Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device M
 ### Rebuild Windows Component Store
 ##########################################################################################################################
 
+Start-Process -FilePath sfc -ArgumentList "/scannow" -Wait -NoNewWindow
+
 $commands = @(
     "/Cleanup-Mountpoints",
     "/Online /Cleanup-Image /ScanHealth",
