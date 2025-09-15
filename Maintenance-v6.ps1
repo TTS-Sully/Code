@@ -134,9 +134,8 @@ foreach ($cmd in $commands) {
 
 $system = Get-CimInstance -ClassName Win32_ComputerSystem
 if ($system.Manufacturer -eq "HP") {
-    Install-Module -Name HPCMSL -Force -AcceptLicense
-    #Install-Module -Name HPCMSL -Force
-    Install-Module -Name HPDrivers -Force
+    Install-Module -Name HPCMSL -Force -AcceptLicense -Confirm:$False
+    Install-Module -Name HPDrivers -Force -Confirm:$False
 
     #Get-HPDrivers -NoPrompt -ShowSoftware -BIOS -DeleteInstallationFiles -SuspendBL
     Get-HPDrivers -NoPrompt -ShowSoftware -DeleteInstallationFiles -SuspendBL
