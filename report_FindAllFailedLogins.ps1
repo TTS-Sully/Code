@@ -12,6 +12,11 @@ $events = Get-WinEvent -FilterHashtable @{
     LogName = 'Security'
     ID = 4625
     StartTime = $startTime
+} -ErrorAction SilentlyContinue
+
+if($events -and $events.Count) {
+    Write-Output "No failed login events found in the specified time range."
+    Exit 1
 }
 
 # Extract relevant properties and create custom objects
