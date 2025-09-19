@@ -1,7 +1,0 @@
-Windows Registry Editor Version 5.00
-
-[HKEY_CLASSES_ROOT\SystemFileAssociations\.ps1\Shell\runas]
-"HasLUAShield"=""
-
-[HKEY_CLASSES_ROOT\SystemFileAssociations\.ps1\Shell\runas\command]
-@="powershell.exe -ExecutionPolicy Bypass -File \"%1\""

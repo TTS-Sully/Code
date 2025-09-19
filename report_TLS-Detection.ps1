@@ -1,3 +1,8 @@
+#################################################################################################
+# This script checks the TLS 1.2 protocol status in the Windows registry.
+# Created by: Erik Sullivan
+# Updated: 2025-09-19
+#################################################################################################
 # Define the registry path
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols"
 
