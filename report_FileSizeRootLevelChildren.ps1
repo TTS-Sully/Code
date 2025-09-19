@@ -22,7 +22,7 @@ foreach ($child in $children) {
     } else {
         # If the child is a file, add its size directly
         $totalSize += $child.Length
-        $fileSizeInGB = [Math]::Round($child.Length / 1GB, 2)
+        $fileSizeInGB = [Math]::Round($child.Length / 1GB, 5)
         $gb_formatted = "{0:N2}" -f $fileSizeInGB # Formats to 2 decimal places
         Write-Output "$child : $gb_formatted GB"
     }
