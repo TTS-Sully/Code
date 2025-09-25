@@ -9,12 +9,6 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
-#Requires -Version 5.1
-
-Register-PSRepository -Default
-# Register-PSRepository -Name PSGallery -SourceLocation "https://www.powershellgallery.com/api/v2" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-Set-ExecutionPolicy Bypass -Scope Process -Force
-
 ##########################################################################################################################
 ### Variable Builder
 ##########################################################################################################################
@@ -117,6 +111,42 @@ Write-DriveSpaceNotification
 Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device Metadata' -Name DeviceMetadataServiceURL -Value 'http://dmd.metaservices.microsoft.com/dms/metadata.svc'
 
 ##########################################################################################################################
+### Rebuild Windows Component Store
+##########################################################################################################################
+
+Start-Process -FilePath sfc -ArgumentList "/scannow" -Wait -NoNewWindow
+
+$commands = @(
+    "/Cleanup-Mountpoints",
+    "/Online /Cleanup-Image /ScanHealth",
+    "/Online /Cleanup-Image /RestoreHealth",
+    "/Online /Cleanup-Image /StartComponentCleanup /ResetBase"
+)
+
+foreach ($cmd in $commands) {
+    Write-Host "Running: DISM $cmd"
+    Start-Process -FilePath "DISM.exe" -ArgumentList $cmd -Verb RunAs -Wait
+}
+
+##########################################################################################################################
+### Prep and Run HP Drivers and Software Updates
+##########################################################################################################################
+
+$system = Get-CimInstance -ClassName Win32_ComputerSystem
+if ($system.Manufacturer -eq "HP") {
+    Install-Module -Name HPCMSL -Force -AcceptLicense -Confirm:$False
+    Install-Module -Name HPDrivers -Force -Confirm:$False
+
+    #Get-HPDrivers -NoPrompt -ShowSoftware -BIOS -DeleteInstallationFiles -SuspendBL
+    Get-HPDrivers -NoPrompt -ShowSoftware -DeleteInstallationFiles -SuspendBL
+
+    # Output the result
+    Write-Output "HP Drivers and Software Updates completed." | Write-Log "HP Drivers and Software Updates completed."
+} else {
+    Write-Output "This system is not an HP device. Skipping HP Drivers and Software Updates." | Write-Log "This system is not an HP device. Skipping HP Drivers and Software Updates."
+}
+
+##########################################################################################################################
 ### Prep and Run Windows Store Updates"
 ##########################################################################################################################
 
@@ -143,11 +173,10 @@ try {
 Write-Host "Starting Monitored Windows Updates..." | Write-Log "Starting Monitored Windows Updates..."
 
 try {
-    Import-Module PSWindowsUpdate
     # Authorize Service Manager to inlcude all updates
-    
+    Add-WUServiceManager -ServiceID "7971f918-a847-4430-9279-4a52d1efe18d" -AddServiceFlag 7 -Confirm:$False | Out-Null
     Write-Host "Windows Update Has Started" | Write-Log "Windows Update Has Started"
-    Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$False
+    Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot 
 
     # Triggers the Settings > Control > Update
     #control update
@@ -160,6 +189,19 @@ try {
 } catch {
     Write-Host "Windows Update failed... " + $_.Exception.Message | Write-Log "Windows Update failed... " + $_.Exception.Message
 }
+
+##########################################################################################################################
+### Install Microsoft Application Side Loader
+##########################################################################################################################
+
+# Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe | Out-Null
+# Write-Log "Microsoft Application Side Loader Installed"
+
+##########################################################################################################################
+### Prep and Run winget appropriate package updates
+##########################################################################################################################
+
+# winget upgrade --all --accept-package-agreements --accept-source-agreements
 
 ##########################################################################################################################
 ### Begin Windows Cleanup and Optimization
