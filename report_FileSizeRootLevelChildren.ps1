@@ -17,6 +17,7 @@ foreach ($child in $children) {
         
         $totalSize += $folderSize
         $fileSizeInGB = [Math]::Round($folderSize / 1GB, 2)
+        
         $gb_formatted = "{0:N2}" -f $fileSizeInGB # Formats to 2 decimal places
         Write-Output "$child : $gb_formatted GB"
     } else {

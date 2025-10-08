@@ -16,7 +16,7 @@ $events = Get-WinEvent -FilterHashtable @{
 
 if($events -and $events.Count) {
     Write-Output "No failed login events found in the specified time range."
-    Exit 1
+    #Exit 1
 }
 
 # Extract relevant properties and create custom objects
@@ -43,6 +43,6 @@ if($parsedEvents.Count -eq 0) {
 
     # Display the results
     $uniqueEvents | Format-Table -AutoSize
-    Exit 0
+    #Exit 0
 }
 

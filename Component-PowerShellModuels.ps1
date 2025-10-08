@@ -4,29 +4,10 @@
 ### Written by ESS
 ##########################################################################################################################
 
-$FileSystemPath = [System.Environment]::GetEnvironmentVariable('SystemDrive')
-$Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-$LogDirectoryPath = $FileSystemPath  + '\ProgramData\TTS'
-# Set log file path with date to ensure uniqueness
-$LogPath = $LogDirectoryPath + '\Maintenance_Log_' + $Date + '_Automation.txt'
-$TTSPath = $FileSystemPath + '\TTS'
-
-##########################################################################################################################
-### Functions
-##########################################################################################################################
-
-function get-now {
-    param ([string]$format = "yyyy-MM-dd_HH-mm-ss")
-    return (Get-Date).ToString($format)
-}
-
-function Write-Log {
-    param ([string]$Message)
-    $timestamp = get-now
-    "$timestamp $Message" | Out-File -FilePath $LogPath -Append
-}
-
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted -ErrorAction SilentlyContinue
+
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 ##########################################################################################################################
 ### Install Microsoft NuGet
@@ -58,8 +39,14 @@ Install-Module -Name PSWindowsUpdate -Repository PSGallery -Force
 Import-Module PSWindowsUpdate
 
 ##########################################################################################################################
-### Install Microsoft Windows Update for PowerShell
+### Install Pending Reboot
 ##########################################################################################################################
 
 Write-Host "Installing PendingReboot module..."
 Install-Module -Name PendingReboot -Force -AllowClobber -Verbose:$false
+
+##########################################################################################################################
+### Install GroupPolicy
+##########################################################################################################################
+
+Import-Module GroupPolicy
