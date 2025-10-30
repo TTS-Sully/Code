@@ -1,7 +1,7 @@
 
 # Define the IP address
-$ipSTART = "10.0.0.1"
-$ipEND = "10.0.0.255"
+$ipSTART = "10.19.68.1"
+$ipEND = "10.19.68.255"
 
 # Split the IP address into an array
 $ipArrayStart = $ipSTART -split "\."
