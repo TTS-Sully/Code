@@ -197,18 +197,29 @@ Try {
 ##########################################################################################################################
 ### Detect and Clean Orphaned and Obsolete Windows Fix Files
 ##########################################################################################################################
-
+$FileSystemPath = $env:SystemDrive
 Write-Host "Cleaning Orphaned and Obsolete Windows Fix Files..."
-if(Test-Path ('$FileSystemPath\Windows\SoftwareDistribution.old')) {
-    Remove-Item -Path '$FileSystemPath\Windows\SoftwareDistribution.old' -Recurse -Force
-}
 
-if(Test-Path ('$FileSystemPath\Windows\System32\catroot2.old')) {
-    Remove-Item -Path '$FileSystemPath\Windows\System32\catroot2.old' -Recurse -Force
-}
+$obsoleteFolders = @(
+    "Windows\SoftwareDistribution.old",
+    "Windows\System32\catroot2.old",
+    "Windows.old"
+)
 
-if(Test-Path ('$FileSystemPath\Windows.old')) {
-    Remove-Item -Path '$FileSystemPath\Windows.old' -Recurse -Force
+foreach ($folder in $obsoleteFolders) {
+    $fullPath = Join-Path $FileSystemPath $folder
+    if (Test-Path $fullPath) {
+        Write-Host "Attempting to remove $fullPath..."
+        try {
+            Remove-Item -Path $fullPath -Recurse -Force -ErrorAction Stop
+            Write-Host "Removed: $fullPath"
+        }
+        catch {
+            Write-Warning "Failed to remove $fullPath. Reason: $($_.Exception.Message)"
+        }
+    } else {
+        Write-Host "Not found: $fullPath"
+    }
 }
 
 ##########################################################################################################################
