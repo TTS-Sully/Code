@@ -12,7 +12,7 @@ Remove-Item "$env:allusersprofile\Microsoft\Network\Downloader\qmgr*.dat" -Force
  
 # Renaming the Software Distribution and CatRoot Folder
 # Remove-Item "$env:systemroot\SoftwareDistribution" -Force -Recurse -ErrorAction SilentlyContinue 
-Rename-Item "$env:systemroot\SoftwareDistribution" "$env:systemroot\SoftwareDistribution-$(Get-Date -Format "yyyy-MM-dd")"
+Rename-Item "$env:systemroot\SoftwareDistribution" "$env:systemroot\SoftwareDistribution-$(Get-Date -Format "yyyy-MM-dd-HHmmss")" -ErrorAction SilentlyContinue
 Remove-Item "$env:systemroot\System32\Catroot2" -Force -Recurse -ErrorAction SilentlyContinue 
  
 # Removing old Windows Update log 
