@@ -93,5 +93,5 @@ wuauclt /resetauthorization /detectnow
 #WUAUClt /SelfUpdateUnmanaged
 USOCLIENT.EXE RefreshSettings
 USOCLIENT.EXE StartScan
-USOClient.exe ScanInstallWait 
-USOClient.exe StartInstall
+#USOClient.exe ScanInstallWait 
+#USOClient.exe StartInstall

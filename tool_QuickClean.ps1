@@ -27,8 +27,9 @@ Try {
     Get-AppxPackage *microsoft.windowscommunicationsapps* | Remove-AppxPackage
 
     # Remove Candy Crush Soda Saga
-    Write-Host "Removing Candy Crush Soda Saga"
-    Get-AppxPackage *king.com.CandyCrushSodaSaga* | Remove-AppxPackage
+    Write-Host "Removing all king.com games"
+    Get-AppxPackage *king.com* | Remove-AppxPackage
+
     # Remove Drawboard PDF
     Write-Host "Removing Drawboard PDF"
     Get-AppxPackage *Microsoft.DrawboardPDF* | Remove-AppxPackage
@@ -189,6 +190,10 @@ Try {
     # Remove Xbox Gaming Overlay
     Write-Host "Removing Xbox Gaming Overlay"
     Get-AppxPackage *Microsoft.XboxGameingOverlay* | Remove-AppxPackage
+
+    # Remove Outlook for Windows
+    Write-Host "Removing Outlook for Windows"
+     Get-AppxPackage *Microsoft.OutlookForWindows* | Remove-AppxPackage
 
 } catch {
     Write-Host "There was a problem removing preinstalled software"
