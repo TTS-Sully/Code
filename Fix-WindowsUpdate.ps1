@@ -95,3 +95,19 @@ USOCLIENT.EXE RefreshSettings
 USOCLIENT.EXE StartScan
 #USOClient.exe ScanInstallWait 
 #USOClient.exe StartInstall
+
+
+<#
+net stop usosvc
+net stop bits
+net stop wuauserv
+net stop dosvc
+takeown /f C:\Windows\SoftwareDistribution\Download /r /d y
+icacls  C:\Windows\SoftwareDistribution\Download /grant SYSTEM:(OI)(CI)(F) /t
+icacls  C:\Windows\SoftwareDistribution\Download /grant "NT SERVICE\TrustedInstaller":(OI)(CI)(F) /t
+rmdir /s /q C:\Windows\SoftwareDistribution\Download\79ccbdc24229d8f5bcdaf6f73fdeb7dc
+net start dosvc
+net start wuauserv
+net start bits
+net start usosvc
+#>
