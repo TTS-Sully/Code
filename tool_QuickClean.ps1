@@ -191,6 +191,10 @@ Try {
     Write-Host "Removing Xbox Gaming Overlay"
     Get-AppxPackage *Microsoft.XboxGameingOverlay* | Remove-AppxPackage
 
+    Get-AppxPackage *Microsoft.Xbox.TCUI* | Remove-AppxPackage
+    Get-AppxPackage *Microsoft.XboxGameOverlay* | Remove-AppxPackage
+    Get-AppxPackage *Microsoft.XboxGamingOverlay* | Remove-AppxPackage
+
     # Remove Outlook for Windows
     Write-Host "Removing Outlook for Windows"
      Get-AppxPackage *Microsoft.OutlookForWindows* | Remove-AppxPackage

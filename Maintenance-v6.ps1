@@ -12,7 +12,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 #Requires -Version 5.1
 
 Register-PSRepository -Default
-# Register-PSRepository -Name PSGallery -SourceLocation "https://www.powershellgallery.com/api/v2" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+Register-PSRepository -Name PSGallery -SourceLocation "https://www.powershellgallery.com/api/v2" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
 Set-ExecutionPolicy Bypass -Scope Process -Force
 
 ##########################################################################################################################
@@ -78,7 +78,7 @@ Write-Host "Starting Local Maintenance Script v6..."
 
 $newnow = get-now
 Checkpoint-Computer -Description "TTS Maintenance: $newnow" -RestorePointType "MODIFY_SETTINGS" -ErrorAction SilentlyContinue
-Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
 
 if (!(Test-Path -Path $LogDirectoryPath)) {
     New-Item -ItemType Directory -Path $LogDirectoryPath
@@ -218,6 +218,9 @@ Try {
     Get-AppxPackage *Microsoft.XboxSpeechToTextOverlay* | Remove-AppxPackage
     Get-AppxPackage *Microsoft.XboxIdentityProvider* | Remove-AppxPackage
     Get-AppxPackage *Microsoft.XboxGameingOverlay* | Remove-AppxPackage
+    Get-AppxPackage *Microsoft.Xbox.TCUI* | Remove-AppxPackage
+    Get-AppxPackage *Microsoft.XboxGameOverlay* | Remove-AppxPackage
+    Get-AppxPackage *Microsoft.XboxGamingOverlay* | Remove-AppxPackage
 } catch {
     Write-Host "There was a problem removing preinstalled software" | Write-Log "There was a problem removing preinstalled software" + $_.Exception.Message
 }
