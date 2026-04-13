@@ -221,6 +221,10 @@ Try {
     Get-AppxPackage *Microsoft.Xbox.TCUI* | Remove-AppxPackage
     Get-AppxPackage *Microsoft.XboxGameOverlay* | Remove-AppxPackage
     Get-AppxPackage *Microsoft.XboxGamingOverlay* | Remove-AppxPackage
+    Get-AppxPackage *Microsoft.XboxIdentityProvider* | Remove-AppxPackage
+    Get-AppxPackage *Microsoft.XboxGameingOverlay* | Remove-AppxPackage
+    # Not sure if MSoft is using this for the actual office version of New Outlook
+    # Get-AppxPackage *Microsoft.OutlookForWindows* | Remove-AppxPackage
 } catch {
     Write-Host "There was a problem removing preinstalled software" | Write-Log "There was a problem removing preinstalled software" + $_.Exception.Message
 }
