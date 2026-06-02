@@ -17,7 +17,6 @@ If ($ChkSvc.status -eq "Running"){
  	write-host '<-End Result->'
  	#exit 0
 } else {
-    #checking install status takes some time so it's only done if the agent is detected to not be running.
     $AgentInstallStatus = Get-ItemProperty $paths | Where-Object { $_.DisplayName -like 'Huntress Agent' }
     if ($null -eq $AgentInstallStatus){
             write-host '<-Start Result->'
@@ -40,7 +39,6 @@ If ($ChkSvc.status -eq "Running"){
  	write-host '<-End Result->'
  	#exit 0
 } else {
-    #checking install status takes some time so it's only done if the agent is detected to not be running.
     $ReoInstallStatus = Get-ItemProperty $paths | Where-Object { $_.DisplayName -like 'Huntress Rio' }
     if ($null -eq $ReoInstallStatus){
             write-host '<-Start Result->'

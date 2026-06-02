@@ -1,0 +1,1 @@
+if ([version](Get-MpComputerStatus).AMEngineVersion -lt [version]"1.1.26030.3008") { exit 1 } else { exit 0 }

@@ -1,6 +1,6 @@
 ##########################################################################################################################
 ### Tech Team Solutions Deployable Maitenance Script
-### Last Updated 2025.08.14
+### Last Updated 2026.04.17
 ### Written by ESS
 ##########################################################################################################################
 # Requires -RunAsAdministrator
@@ -11,9 +11,9 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
 #Requires -Version 5.1
 
-Register-PSRepository -Default
-Register-PSRepository -Name PSGallery -SourceLocation "https://www.powershellgallery.com/api/v2" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-Set-ExecutionPolicy Bypass -Scope Process -Force
+#Register-PSRepository -Default
+#Register-PSRepository -Name PSGallery -SourceLocation "https://www.powershellgallery.com/api/v2" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+#Set-ExecutionPolicy Bypass -Scope Process -Force
 
 ##########################################################################################################################
 ### Variable Builder

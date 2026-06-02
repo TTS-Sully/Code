@@ -1,3 +1,8 @@
+Suspend-BitLocker -MountPoint "C:" -RebootCount 2
+
+New-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Secureboot" -Name "MicrosoftUpdateManagedOptIn" -PropertyType DWord -Value 0x5944 -Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Secureboot" -Name "AvailableUpdates" -Value 0x5be6 -Force
+
 Set-ExecutionPolicy Unrestricted
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module UEFIv2 -Force
