@@ -7,7 +7,7 @@
 $EventID = $env:EventIDToFind
 #$EventID = 2
 $EventWindow = $env:EventWindow #in minutes
-#$EventWindow = 24
+#$EventWindow = 1440 (24 hours)
 
 # Get all event logs on the system
 $EventLogs = Get-EventLog -List
@@ -18,11 +18,11 @@ foreach ($Log in $EventLogs) {
 $Events = Get-EventLog -LogName $Log.Log -InstanceId $EventID -After (Get-Date).AddMinutes(-($EventWindow)) -ErrorAction SilentlyContinue
 
     if ($Events) {
-        Write-Host "Found events with the specified ID"
+        Write-Host "Found events with the specified ID: $EventID"
         exit 0
     } else {
         #Write-Host "Found no events with the specified ID in this log"
     }
 }
-Write-Host "Found No Events"
+Write-Host "Found No Events with ID: $EventID"
 exit 1

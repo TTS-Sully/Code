@@ -1,6 +1,6 @@
 ##########################################################################################################################
-### Tech Team Solutions Maintenance Script v6
-### Last Updated 2026.07.23
+### Tech Team Solutions Deployable Maitenance Script
+### Last Updated 2026.07.17
 ### Written by ESS
 ##########################################################################################################################
 # Requires -RunAsAdministrator
@@ -9,81 +9,11 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
-### Force TLS 1.2 (critical for older systems)
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+#Requires -Version 5.1
 
-### PSGallery
-try {
-    if (-not (Get-PackageSource -Name PSGallery -ErrorAction SilentlyContinue)) {
-        Register-PackageSource `
-            -Name PSGallery `
-            -ProviderName PowerShellGet `
-            -Location "https://www.powershellgallery.com/api/v2" `
-            -Trusted `
-            -Force `
-            -ErrorAction Stop
-
-        Write-Host "[SUCCESS] PSGallery package source registered." -ForegroundColor Green
-    }
-    else {
-        Set-PackageSource -Name PSGallery -Trusted -Force -ErrorAction Stop
-        Write-Host "[SUCCESS] PSGallery package source already present and trusted." -ForegroundColor Green
-    }
-} catch {
-    Write-Host "[ERROR] Failed to configure PSGallery: $($_.Exception.Message)" -ForegroundColor Red
-}
-
-### Install NuGet Package Provider (if not already installed)
-
-Install-PackageProvider -Name NuGet -MinimumVersion '2.8.5.201' -Scope AllUsers -Force -Confirm:$false -ErrorAction Stop
-
-### PendingReboot Module
-try {
-   if (-not (Get-Module -ListAvailable -Name PendingReboot)) {
-        Install-Module `
-            -Name PendingReboot `
-            -Repository PSGallery `
-            -Force `
-            -SkipPublisherCheck `
-            -ErrorAction Stop
-
-        Write-Host "[SUCCESS] PendingReboot module installed." -ForegroundColor Green
-    }
-    else {
-        Write-Host "[SUCCESS] PendingReboot module already installed." -ForegroundColor Green
-    }
-} catch {
-    Write-Host "[ERROR] Failed to install PendingReboot module: $($_.Exception.Message)" -ForegroundColor Red
-}
-
-### PSWindowsUpdate Module
-try {
-    if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
-        Install-Module `
-            -Name PSWindowsUpdate `
-            -Repository PSGallery `
-            -RequiredVersion 2.2.1.4 `
-            -Force `
-            -SkipPublisherCheck `
-            -AllowClobber `
-            -ErrorAction Stop
-
-        Write-Host "[SUCCESS] PSWindowsUpdate module installed." -ForegroundColor Green
-    }
-    else {
-        Write-Host "[SUCCESS] PSWindowsUpdate module already installed." -ForegroundColor Green
-    }
-} catch {
-    Write-Host "[ERROR] Failed to install PSWindowsUpdate module: $($_.Exception.Message)" -ForegroundColor Red
-}
-
-### Import PSWindowsUpdate
-try {
-    Import-Module PSWindowsUpdate -Force -ErrorAction Stop
-    Write-Host "[SUCCESS] PSWindowsUpdate module imported." -ForegroundColor Green
-} catch {
-    Write-Host "[ERROR] Failed to import PSWindowsUpdate module: $($_.Exception.Message)" -ForegroundColor Red
-}
+#Register-PSRepository -Default
+#Register-PSRepository -Name PSGallery -SourceLocation "https://www.powershellgallery.com/api/v2" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+#Set-ExecutionPolicy Bypass -Scope Process -Force
 
 ##########################################################################################################################
 ### Variable Builder
@@ -148,7 +78,7 @@ Write-Host "Starting Local Maintenance Script v6..."
 
 $newnow = get-now
 Checkpoint-Computer -Description "TTS Maintenance: $newnow" -RestorePointType "MODIFY_SETTINGS" -ErrorAction SilentlyContinue
-
+Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
 
 if (!(Test-Path -Path $LogDirectoryPath)) {
     New-Item -ItemType Directory -Path $LogDirectoryPath
@@ -167,14 +97,12 @@ if (!(Test-Path -Path $TTSPath)) {
 ### Check for Pending Reboot
 ##########################################################################################################################
 
-
 if((Test-PendingReboot -Detailed -SkipConfigurationManagerClientCheck -SkipPendingFileRenameOperations).RebootPending -eq $true) {
     Write-Log "Reboot Pending. Exiting script."
     Write-Host "Reboot Pending. Please Restart the Device and start maintenance again."
     Read-Host "Press Enter to exit..."
     exit
 }
-
 
 ##########################################################################################################################
 ### Pre Cleanup System Drive Disk Usage
@@ -218,9 +146,11 @@ try {
     Import-Module PSWindowsUpdate
     # Authorize Service Manager to inlcude all updates
     
-    Start-Process -FilePath "UsoClient.exe" -ArgumentList "StartScan" -Wait
-    Start-Process -FilePath "UsoClient.exe" -ArgumentList "StartDownload" -Wait
-    Start-Process -FilePath "UsoClient.exe" -ArgumentList "StartInstall" -Wait
+    Write-Host "Windows Update Has Started" | Write-Log "Windows Update Has Started"
+    Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$False
+
+    # Triggers the Settings > Control > Update
+    #control update
 
     # Triggers Windows Update Scan to update the "Last Checked" list
     usoclient startinteractivescan
