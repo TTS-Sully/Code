@@ -4,116 +4,69 @@
 ### Written by ESS
 ##########################################################################################################################
 
-$goodtorun = $true
-
-# Required Windows PowerShell module directories
-$requiredEntries = @(
+$requiredPaths = @(
     (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
     (Join-Path $env:SystemRoot 'system32\WindowsPowerShell\v1.0\Modules')
 )
 
-Write-Host "Checking required directories..."
-
-foreach ($directory in $requiredEntries) {
-    if (Test-Path -LiteralPath $directory -PathType Container) {
-        Write-Host "Exists:  $directory" -ForegroundColor Green
+# Create missing directories.
+foreach ($path in $requiredPaths) {
+    if (Test-Path -LiteralPath $path -PathType Container) {
+        Write-Host "Exists:  $path" -ForegroundColor Green
     }
     else {
-        Write-Host "Missing: $directory" -ForegroundColor Yellow
-        $goodtorun = $false
-    }
-}
-
-# Stop the script if any required directories are missing.
-if (-not $goodtorun) {
-    Write-Host "One or more required directories are missing. " -ForegroundColor Red
-    exit 1
-}
-
-# Read the existing machine-level PSModulePath.
-$existingMachineValue = [System.Environment]::GetEnvironmentVariable(
-    'PSModulePath',
-    'Machine'
-)
-
-if ($null -eq $existingMachineValue) {
-    $existingMachineValue = ''
-}
-
-# The remainder of the script can then merge the required directories
-# into the existing PSModulePath without removing anything.
-
-$requiredEntries = @(
-    (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
-    (Join-Path $env:SystemRoot 'system32\WindowsPowerShell\v1.0\Modules')
-)
-
-# Read the existing machine-level value. Treat an unset value as empty.
-$existingMachineValue = [System.Environment]::GetEnvironmentVariable('PSModulePath','Machine')
-
-if ($null -eq $existingMachineValue) {
-    $existingMachineValue = ''
-}
-
-$existingEntries = @(
-    $existingMachineValue -split ';' |
-        ForEach-Object { $_.Trim() } |
-        Where-Object { -not [System.String]::IsNullOrWhiteSpace($_) }
-)
-`
-
-# Create missing directories without modifying existing contents.
-foreach ($entry in $requiredEntries) {
-    if (-not (Test-Path -LiteralPath $entry -PathType Container)) {
         try {
-            New-Item -ItemType Directory -Path $entry -Force -ErrorAction Stop |
-                Out-Null
-            Write-Host "Created: $entry"
+            New-Item -ItemType Directory -Path $path -Force -ErrorAction Stop | Out-Null
+            Write-Host "Created: $path" -ForegroundColor Green
         }
         catch {
-            Write-Error "Unable to create '$entry': $($_.Exception.Message)"
+            Write-Error "Unable to create '$path': $($_.Exception.Message)"
+            exit 1
         }
     }
-    else {
-        Write-Host "Exists:  $entry"
-    }
 }
 
-# Add required items only when they are not already present.
-$mergedEntries = [System.Collections.Generic.List[string]]::new()
+# Retrieve the existing machine-level PSModulePath.
+$currentPath = :GetEnvironmentVariable('PSModulePath', 'Machine')
 
-$alreadyPresent = $false
-
-foreach ($existing in $mergedEntries) {
-    if ([System.String]::Equals(
-            [System.Environment]::ExpandEnvironmentVariables($existing),
-            $expandedEntry,
-            [System.StringComparison]::OrdinalIgnoreCase
-        )) {
-        $alreadyPresent = $true
-        break
-    }
-}
-
-if (-not $alreadyPresent) {
-    [void]$mergedEntries.Add($entry)
-}
-
-$newMachineValue = $mergedEntries -join ';'
-
-if ($newMachineValue -ne $existingMachineValue) {
-    [System.Environment]::SetEnvironmentVariable('PSModulePath', $newMachineValue, 'Machine')
-
-    Write-Host 'Updated the machine-level PSModulePath.'
+if (:IsNullOrWhiteSpace($currentPath)) {
+    $currentEntries = @()
 }
 else {
-    Write-Host 'Machine-level PSModulePath already contains all required entries.'
+    $currentEntries = @(
+        $currentPath -split ';' |
+            ForEach-Object { $_.Trim() } |
+            Where-Object { $_ }
+    )
 }
 
-# Refresh the environment of the current PowerShell process.
-[System.Environment]::SetEnvironmentVariable('PSModulePath', $newMachineValue, 'Process')
+# Add required paths, preserving existing entries and order.
+foreach ($path in $requiredPaths) {
+    $pathExists = $currentEntries | Where-Object {
+        $_.TrimEnd('\') -ieq $path.TrimEnd('\')
+    }
 
-Write-Host ''
-Write-Host 'Effective PSModulePath:'
-$env:PSModulePath -split ';' |
-    ForEach-Object { "  $_" }
+    if (-not $pathExists) {
+        $currentEntries += $path
+        Write-Host "Added to PSModulePath: $path" -ForegroundColor Cyan
+    }
+}
+
+$newPath = $currentEntries -join ';'
+
+# Update only if the value has changed.
+if ($newPath -ne $currentPath) {
+    :SetEnvironmentVariable('PSModulePath', $newPath, 'Machine')
+    Write-Host 'Machine-level PSModulePath updated.' -ForegroundColor Green
+}
+else {
+    Write-Host 'Machine-level PSModulePath is already configured.' -ForegroundColor Green
+}
+
+# Update this PowerShell session.
+$env:PSModulePath = $newPath
+
+Write-Host "Current PSModulePath:"
+$env:PSModulePath -split ';' | ForEach-Object {
+    Write-Host "  $_"
+}
