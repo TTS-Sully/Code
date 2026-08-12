@@ -3,6 +3,7 @@
 ### Last Updated 2026.08.12
 ### Written by ESS
 ##########################################################################################################################
+write-Host "v5"
 
 $requiredPaths = @(
     (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
@@ -27,9 +28,9 @@ foreach ($path in $requiredPaths) {
 }
 
 # Retrieve the existing machine-level PSModulePath.
-$currentPath = :GetEnvironmentVariable('PSModulePath', 'Machine')
+$currentPath = [System.Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')
 
-if (:IsNullOrWhiteSpace($currentPath)) {
+if ([System.String]::IsNullOrWhiteSpace($currentPath)) {
     $currentEntries = @()
 }
 else {
@@ -52,11 +53,36 @@ foreach ($path in $requiredPaths) {
     }
 }
 
-$newPath = $currentEntries -join ';'
+$badEntries = @(
+    'C:\Program Files\WindowsPowerShell\ModulesC:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules'
+)
+
+$newPathEntries = [System.Collections.Generic.List[string]]::new()
+
+foreach ($path in @($currentEntries + $requiredPaths)) {
+    if ([System.String]::IsNullOrWhiteSpace($path)) {
+        continue
+    }
+
+    $cleanPath = $path.Trim().TrimEnd('\')
+
+    # Remove known bad concatenated entries.
+    if ($badEntries -contains $cleanPath) {
+        Write-Host "Removing malformed entry: $cleanPath" -ForegroundColor Yellow
+        continue
+    }
+
+    # Add only unique, valid entries.
+    if (-not ($newPathEntries | Where-Object { $_ -ieq $cleanPath })) {
+        [void]$newPathEntries.Add($cleanPath)
+    }
+}
+
+$newPath = $newPathEntries -join ';'
 
 # Update only if the value has changed.
 if ($newPath -ne $currentPath) {
-    :SetEnvironmentVariable('PSModulePath', $newPath, 'Machine')
+    [System.Environment]::SetEnvironmentVariable('PSModulePath', $newPath, 'Machine')
     Write-Host 'Machine-level PSModulePath updated.' -ForegroundColor Green
 }
 else {
