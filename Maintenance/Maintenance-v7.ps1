@@ -1,6 +1,6 @@
 ##########################################################################################################################
-### Tech Team Solutions Deployable Maitenance Script
-### Last Updated 2026.07.17
+### Tech Team Solutions Maintenance Script v6
+### Last Updated 2026.07.23
 ### Written by ESS
 ##########################################################################################################################
 # Requires -RunAsAdministrator
@@ -9,11 +9,81 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
-#Requires -Version 5.1
+### Force TLS 1.2 (critical for older systems)
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-#Register-PSRepository -Default
-#Register-PSRepository -Name PSGallery -SourceLocation "https://www.powershellgallery.com/api/v2" -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-#Set-ExecutionPolicy Bypass -Scope Process -Force
+### PSGallery
+try {
+    if (-not (Get-PackageSource -Name PSGallery -ErrorAction SilentlyContinue)) {
+        Register-PackageSource `
+            -Name PSGallery `
+            -ProviderName PowerShellGet `
+            -Location "https://www.powershellgallery.com/api/v2" `
+            -Trusted `
+            -Force `
+            -ErrorAction Stop
+
+        Write-Host "[SUCCESS] PSGallery package source registered." -ForegroundColor Green
+    }
+    else {
+        Set-PackageSource -Name PSGallery -Trusted -Force -ErrorAction Stop
+        Write-Host "[SUCCESS] PSGallery package source already present and trusted." -ForegroundColor Green
+    }
+} catch {
+    Write-Host "[ERROR] Failed to configure PSGallery: $($_.Exception.Message)" -ForegroundColor Red
+}
+
+### Install NuGet Package Provider (if not already installed)
+
+Install-PackageProvider -Name NuGet -MinimumVersion '2.8.5.201' -Scope AllUsers -Force -Confirm:$false -ErrorAction Stop
+
+### PendingReboot Module
+try {
+   if (-not (Get-Module -ListAvailable -Name PendingReboot)) {
+        Install-Module `
+            -Name PendingReboot `
+            -Repository PSGallery `
+            -Force `
+            -SkipPublisherCheck `
+            -ErrorAction Stop
+
+        Write-Host "[SUCCESS] PendingReboot module installed." -ForegroundColor Green
+    }
+    else {
+        Write-Host "[SUCCESS] PendingReboot module already installed." -ForegroundColor Green
+    }
+} catch {
+    Write-Host "[ERROR] Failed to install PendingReboot module: $($_.Exception.Message)" -ForegroundColor Red
+}
+
+### PSWindowsUpdate Module
+try {
+    if (-not (Get-Module -ListAvailable -Name PSWindowsUpdate)) {
+        Install-Module `
+            -Name PSWindowsUpdate `
+            -Repository PSGallery `
+            -RequiredVersion 2.2.1.4 `
+            -Force `
+            -SkipPublisherCheck `
+            -AllowClobber `
+            -ErrorAction Stop
+
+        Write-Host "[SUCCESS] PSWindowsUpdate module installed." -ForegroundColor Green
+    }
+    else {
+        Write-Host "[SUCCESS] PSWindowsUpdate module already installed." -ForegroundColor Green
+    }
+} catch {
+    Write-Host "[ERROR] Failed to install PSWindowsUpdate module: $($_.Exception.Message)" -ForegroundColor Red
+}
+
+### Import PSWindowsUpdate
+try {
+    Import-Module PSWindowsUpdate -Force -ErrorAction Stop
+    Write-Host "[SUCCESS] PSWindowsUpdate module imported." -ForegroundColor Green
+} catch {
+    Write-Host "[ERROR] Failed to import PSWindowsUpdate module: $($_.Exception.Message)" -ForegroundColor Red
+}
 
 ##########################################################################################################################
 ### Variable Builder
@@ -78,7 +148,7 @@ Write-Host "Starting Local Maintenance Script v6..."
 
 $newnow = get-now
 Checkpoint-Computer -Description "TTS Maintenance: $newnow" -RestorePointType "MODIFY_SETTINGS" -ErrorAction SilentlyContinue
-Set-PSRepository -Name PSGallery -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+
 
 if (!(Test-Path -Path $LogDirectoryPath)) {
     New-Item -ItemType Directory -Path $LogDirectoryPath
@@ -97,12 +167,14 @@ if (!(Test-Path -Path $TTSPath)) {
 ### Check for Pending Reboot
 ##########################################################################################################################
 
+
 if((Test-PendingReboot -Detailed -SkipConfigurationManagerClientCheck -SkipPendingFileRenameOperations).RebootPending -eq $true) {
     Write-Log "Reboot Pending. Exiting script."
     Write-Host "Reboot Pending. Please Restart the Device and start maintenance again."
     Read-Host "Press Enter to exit..."
     exit
 }
+
 
 ##########################################################################################################################
 ### Pre Cleanup System Drive Disk Usage
@@ -120,37 +192,88 @@ Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Device M
 ### Prep and Run Windows Store Updates"
 ##########################################################################################################################
 
-Write-Host "Starting Windows Store Updates..." | Write-Log "Starting Windows Store Updates..."
-try {
-    if ($PSVersionTable.PSVersion.Major -eq 7) {
-        Get-CimInstance -Namespace "Root\cimv2\mdm\dmmap" -ClassName "MDM_EnterpriseModernAppManagement_AppManagement01" | Invoke-CimMethod -MethodName UpdateScanMethod
-    } else {
-        # Scan and install Windows Store Updates
-        $namespaceName = "root\cimv2\mdm\dmmap"
-        $className = "MDM_EnterpriseModernAppManagement_AppManagement01"
-        $wmiObj = Get-WmiObject -Namespace $namespaceName -Class $className
-        $result = $wmiObj.UpdateScanMethod()
+$EntraJoined = $false
+
+if (Get-Command dsregcmd.exe -ErrorAction SilentlyContinue) {
+    $EntraJoined = @(dsregcmd /status) -match '^\s*AzureAdJoined\s*:\s*YES\s*$'
+}
+
+if($EntraJoined) {
+    Write-Host 'Starting Windows Store Updates...'
+
+    $namespaceName = 'root\cimv2\mdm\dmmap'
+    $className = 'MDM_EnterpriseModernAppManagement_AppManagement01'
+
+$namespaceName = 'root\cimv2\mdm\dmmap'
+$className = 'MDM_EnterpriseModernAppManagement_AppManagement01'
+
+    $classExists = $false
+
+    try {
+        $classExists = $null -ne (
+            Get-CimClass `
+                -Namespace $namespaceName `
+                -ClassName $className `
+                -ErrorAction Stop
+        )
     }
-    Write-Host "Windows Store Update Scan Method Result: $result" | Write-Log "Windows Store Update Scan Method Result: $result"
-} catch {
-    Write-Host "Windows Store Update Failed" | Write-Log "Windows Store Update Failed"
+    catch {
+        $classExists = $false
+    }
+
+    Write-Host "Class exists: $classExists"    
+    <#try {
+        # Verify the namespace exists.
+        Get-CimClass -Namespace $namespaceName -ClassName $className -ErrorAction Stop |
+            Out-Null
+
+        # Retrieve the class instance.
+        $wmiObj = Get-CimInstance `
+            -Namespace $namespaceName `
+            -ClassName $className `
+            -ErrorAction Stop
+
+        if ($null -eq $wmiObj) {
+            throw "No instance was returned for $className."
+        }
+
+        # Invoke the scan method.
+        $result = Invoke-CimMethod `
+            -InputObject $wmiObj `
+            -MethodName 'UpdateScanMethod' `
+            -ErrorAction Stop
+
+        if ($null -eq $result) {
+            throw 'UpdateScanMethod returned no result.'
+        }
+
+        Write-Host "Windows Store update scan completed. Return value: $($result.ReturnValue)"
+    }
+    catch [Microsoft.Management.Infrastructure.CimException] {
+        Write-Host "Windows Store update scan failed: $($_.Exception.Message)" `
+            -ForegroundColor Red
+        exit 1
+    }
+    catch {
+        Write-Host "Windows Store update scan failed: $($_.Exception.Message)" `
+            -ForegroundColor Red
+        exit 1
+    }#>
 }
 
 ##########################################################################################################################
 ### Prep and Run Windows Update (Requires NuGet)
 ##########################################################################################################################
-
+<#
 Write-Host "Starting Monitored Windows Updates..." | Write-Log "Starting Monitored Windows Updates..."
 
 try {
     Import-Module PSWindowsUpdate
     # Authorize Service Manager to inlcude all updates
     
-    Write-Host "Windows Update Has Started" | Write-Log "Windows Update Has Started"
-    Install-WindowsUpdate -MicrosoftUpdate -AcceptAll -IgnoreReboot -Confirm:$False
-
-    # Triggers the Settings > Control > Update
-    #control update
+    Start-Process -FilePath "UsoClient.exe" -ArgumentList "StartScan" -Wait
+    Start-Process -FilePath "UsoClient.exe" -ArgumentList "StartDownload" -Wait
+    Start-Process -FilePath "UsoClient.exe" -ArgumentList "StartInstall" -Wait
 
     # Triggers Windows Update Scan to update the "Last Checked" list
     usoclient startinteractivescan
@@ -160,7 +283,7 @@ try {
 } catch {
     Write-Host "Windows Update failed... " + $_.Exception.Message | Write-Log "Windows Update failed... " + $_.Exception.Message
 }
-
+#>
 ##########################################################################################################################
 ### Install and run Microsoft Safety Scanner Download
 ##########################################################################################################################
@@ -185,18 +308,18 @@ try {
 ##########################################################################################################################
 ### Begin Registry Backup
 ##########################################################################################################################
-
+<#
 #craete a backup folder
 New-Item -ItemType Directory -Path "$TTSPath\Backup\SystemFiles" -Force
 
 #backup registry
 $regExport = Start-Process -FilePath "regedit.exe" -ArgumentList "/E `"$TTSPath\Backup\SystemFiles\FullRegistryBackup.reg`"" -PassThru
 $regExport.WaitForExit()
-
+#>
 ##########################################################################################################################
 ### Begin Browser Data Backup
 ##########################################################################################################################
-
+<#
 # Create a backup folder
 New-Item -ItemType Directory -Path "$TTSPath\Backup\EdgeData" -Force
 New-Item -ItemType Directory -Path "$TTSPath\Backup\ChromeData" -Force
@@ -225,24 +348,24 @@ if (Test-Path "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Preferences") {
 if (Test-Path "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Login Data") {
     Copy-Item -Path "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Login Data" -Destination "$TTSPath\Backup\ChromeData\Login Data"
 }
-
+#>
 
 ##########################################################################################################################
 ### Archive Backup Files
 ##########################################################################################################################
-
+<#
 $SourcePath = "$TTSPath\Backup"
 $ZipFile = "$TTSPath\Backup\Backup_$(Get-Date -Format 'yyyyMMdd').zip"
 
 Get-ChildItem -Path $SourcePath -Directory |
     Select-Object -ExpandProperty FullName |
     Compress-Archive -Path {$_} -DestinationPath $ZipFile -Force
-
+#>
 ##########################################################################################################################
 ### Begin Windows Cleanup and Optimization
 ##########################################################################################################################
 ### Self Cleanup
-
+<#
 if (Test-Path "$TTSPath\Backup\EdgeData") {
     Remove-Item "$TTSPath\Backup\EdgeData" -Recurse -Force
 }
@@ -262,7 +385,7 @@ Get-ChildItem -Path $BackupFolder -Filter "Backup_*.zip" |
     Sort-Object LastWriteTime -Descending |
     Select-Object -Skip 3 |
     Remove-Item -Force
-
+#>
 ##########################################################################################################################
 ### Begin Windows Cleanup and Optimization
 ##########################################################################################################################

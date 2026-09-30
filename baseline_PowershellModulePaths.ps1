@@ -3,78 +3,48 @@
 ### Last Updated 2026.08.12
 ### Written by ESS
 ##########################################################################################################################
-write-Host "v5"
+write-Host "v9"
 
+# Keep variables in their original form.
 $requiredPaths = @(
-    (Join-Path $env:ProgramFiles 'WindowsPowerShell\Modules'),
-    (Join-Path $env:SystemRoot 'system32\WindowsPowerShell\v1.0\Modules')
+    '%ProgramFiles%\WindowsPowerShell\Modules'
+    '%SystemRoot%\system32\WindowsPowerShell\v1.0\Modules'
 )
 
-# Create missing directories.
-foreach ($path in $requiredPaths) {
-    if (Test-Path -LiteralPath $path -PathType Container) {
-        Write-Host "Exists:  $path" -ForegroundColor Green
-    }
-    else {
-        try {
-            New-Item -ItemType Directory -Path $path -Force -ErrorAction Stop | Out-Null
-            Write-Host "Created: $path" -ForegroundColor Green
-        }
-        catch {
-            Write-Error "Unable to create '$path': $($_.Exception.Message)"
-            exit 1
-        }
-    }
-}
-
-# Retrieve the existing machine-level PSModulePath.
 $currentPath = [System.Environment]::GetEnvironmentVariable('PSModulePath', 'Machine')
-
-if ([System.String]::IsNullOrWhiteSpace($currentPath)) {
-    $currentEntries = @()
-}
-else {
-    $currentEntries = @(
-        $currentPath -split ';' |
-            ForEach-Object { $_.Trim() } |
-            Where-Object { $_ }
-    )
-}
-
-# Add required paths, preserving existing entries and order.
-foreach ($path in $requiredPaths) {
-    $pathExists = $currentEntries | Where-Object {
-        $_.TrimEnd('\') -ieq $path.TrimEnd('\')
-    }
-
-    if (-not $pathExists) {
-        $currentEntries += $path
-        Write-Host "Added to PSModulePath: $path" -ForegroundColor Cyan
-    }
-}
-
-$badEntries = @(
-    'C:\Program Files\WindowsPowerShell\ModulesC:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules'
-)
 
 $newPathEntries = [System.Collections.Generic.List[string]]::new()
 
-foreach ($path in @($currentEntries + $requiredPaths)) {
+foreach ($path in @($currentPath.Split(';') + $requiredPaths)) {
     if ([System.String]::IsNullOrWhiteSpace($path)) {
         continue
     }
 
-    $cleanPath = $path.Trim().TrimEnd('\')
+    # Preserve the original environment-variable notation.
+    $originalPath = $path.Trim().TrimEnd('\')
 
-    # Remove known bad concatenated entries.
-    if ($badEntries -contains $cleanPath) {
-        Write-Host "Removing malformed entry: $cleanPath" -ForegroundColor Yellow
+    # Expand only for comparison.
+    $expandedPath = [System.Environment]::ExpandEnvironmentVariables($originalPath).TrimEnd('\')
+
+    # Remove the known malformed concatenated entry.
+    $malformedPaths = @(
+        'C:\Program Files\WindowsPowerShell\Modules'
+        'C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules'
+        'C:\Program Files\WindowsPowerShell\ModulesC:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules'
+    )
+
+    if ($expandedPath -ieq $malformedPaths) {
+        Write-Host "Removing malformed entry: $originalPath" -ForegroundColor Yellow
         continue
     }
 
-    # Add only unique, valid entries.
-    if (-not ($newPathEntries | Where-Object { $_ -ieq $cleanPath })) {
-        [void]$newPathEntries.Add($cleanPath)
+    # Prevent duplicates while preserving the first entry's original format.
+    $alreadyExists = $newPathEntries | Where-Object {
+        ([System.Environment]::ExpandEnvironmentVariables($_)).TrimEnd('\') -ieq $expandedPath
+    }
+
+    if (-not $alreadyExists) {
+        [void]$newPathEntries.Add($originalPath)
     }
 }
 

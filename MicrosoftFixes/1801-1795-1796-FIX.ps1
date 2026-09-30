@@ -30,9 +30,9 @@ if((Get-ComputerInfo).BiosFirmwareType -eq "UEFI"){
         Start-ScheduledTask -TaskName "\Microsoft\Windows\PI\Secure-Boot-Update"
     } else {
         Write-Host "The system is UEFI but does not have the correct certificate, skipping the rest of the script."
-        exit 1
+        #exit 1
     }
 } else {
     Write-Host "This system is not UEFI, skipping the rest of the script."
-    exit 1
+    #exit 1
 }
